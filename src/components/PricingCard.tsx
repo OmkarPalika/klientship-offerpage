@@ -42,7 +42,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   onDelete,
   onEdit
 }) => {
-  const { ref, isIntersecting } = useScrollAnimation();
+  const { ref: animationRef, isIntersecting } = useScrollAnimation();
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [expandDirection, setExpandDirection] = useState<'left' | 'right' | 'even'>('right');
@@ -131,14 +131,23 @@ const PricingCard: React.FC<PricingCardProps> = ({
     setEditedData({...editedData, features: updatedFeatures});
   };
 
+  // Create a callback ref that will assign both refs
+  const setRefs = (element: HTMLDivElement | null) => {
+    // Set the animation ref
+    if (typeof animationRef === 'function') {
+      animationRef(element);
+    }
+    
+    // Set the card ref
+    if (cardRef) {
+      cardRef.current = element;
+    }
+  };
+
   return (
     <>
       <div
-        ref={(el) => {
-          // Combine refs
-          ref(el);
-          if (cardRef) cardRef.current = el;
-        }}
+        ref={setRefs}
         className={cn(
           "rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-xl stagger-card reveal-on-scroll relative",
           variant === 'featured' ? 'border-2 border-theme-green dark:border-theme-green' : 'border border-theme-dark-beige dark:border-gray-700',
