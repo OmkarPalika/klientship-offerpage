@@ -94,16 +94,16 @@ const PricingCard: React.FC<PricingCardProps> = ({
     setEditedData({...editedData, features: updatedFeatures});
   };
 
-  // Create a callback ref that will assign both refs
-  const setRefs = (element: HTMLDivElement | null) => {
-    // Set the animation ref
+  // Create a properly typed callback ref function
+  const setRefs = React.useCallback((element: HTMLDivElement | null) => {
+    // Handle the animation ref if it's a function
     if (animationRef && typeof animationRef === 'function') {
       animationRef(element);
     }
     
     // Set the card ref
     cardRef.current = element;
-  };
+  }, [animationRef]);
 
   return (
     <>
