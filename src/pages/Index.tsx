@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import PricingCard from '@/components/PricingCard';
-import Button from '@/components/Button';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { cn } from '@/lib/utils';
 import { GoUpButton } from '@/components/go-up-button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Dialog,
@@ -18,6 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Button from '@/components/Button';
+import { X } from 'lucide-react';
+import HeroBanner from '@/components/pricing/HeroBanner';
+import PricingSection from '@/components/pricing/PricingSection';
+import CallToAction from '@/components/pricing/CallToAction';
 
 interface PricingPlan {
   id: string;
@@ -208,8 +208,6 @@ const defaultPlans: PricingPlan[] = [
 ];
 
 const Index = () => {
-  const headerAnimation = useScrollAnimation();
-  const sectionAnimation = useScrollAnimation();
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardData, setNewCardData] = useState<Omit<PricingPlan, 'id'>>({
@@ -307,106 +305,23 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-theme-beige dark:bg-gray-900 dark:text-white transition-colors duration-300">
       <Header />
       
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-6 right-6 z-50 flex items-center">
         <ThemeToggle />
       </div>
       
       <GoUpButton />
       
       <main className="flex-grow">
-        <section className="bg-theme-beige dark:bg-gray-900 py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div 
-              ref={headerAnimation.ref}
-              className={cn(
-                "text-center max-w-3xl mx-auto space-y-6",
-                headerAnimation.isIntersecting ? "animate-fade-in" : "opacity-0"
-              )}
-            >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-theme-navy dark:text-white">
-                Limited Period Offer
-              </h1>
-              <p className="text-xl text-theme-navy/70 dark:text-gray-300">
-                Choose the perfect plan for your needs with our special time-limited pricing. Premium quality at affordable rates.
-              </p>
-              <div className="pt-4">
-                <Button variant="primary" size="lg" className="mx-auto">
-                  View All Plans
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HeroBanner />
         
-        <section className="py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div 
-              ref={sectionAnimation.ref}
-              className={cn(
-                "text-center max-w-3xl mx-auto mb-16 space-y-4",
-                sectionAnimation.isIntersecting ? "animate-fade-in" : "opacity-0"
-              )}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-theme-navy dark:text-white">
-                Simple, Transparent Pricing
-              </h2>
-              <p className="text-lg text-theme-navy/70 dark:text-gray-300">
-                No hidden fees, no surprises. Pick the plan that works for you.
-              </p>
-              
-              <div className="pt-8">
-                <Button 
-                  variant="primary" 
-                  className="mx-auto flex items-center gap-2" 
-                  onClick={() => setIsAddingCard(true)}
-                >
-                  <Plus className="h-5 w-5" />
-                  Add New Plan
-                </Button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {pricingPlans.map((plan) => (
-                <PricingCard
-                  key={plan.id}
-                  id={plan.id}
-                  title={plan.title}
-                  subtitle={plan.subtitle}
-                  price={plan.price}
-                  features={plan.features}
-                  buttonText={plan.buttonText}
-                  variant={plan.variant}
-                  image={plan.image || undefined}
-                  onDelete={handleDeleteCard}
-                  onEdit={handleEditCard}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <PricingSection 
+          pricingPlans={pricingPlans}
+          onDeleteCard={handleDeleteCard}
+          onEditCard={handleEditCard}
+          onAddCardClick={() => setIsAddingCard(true)}
+        />
         
-        <section className="bg-theme-green dark:bg-theme-navy text-white py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto space-y-6 reveal-on-scroll">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Ready to Get Started?
-              </h2>
-              <p className="text-lg opacity-90">
-                Contact us today and let's discuss how we can help you achieve your goals.
-              </p>
-              <div className="pt-4">
-                <Button 
-                  variant="secondary" 
-                  size="lg" 
-                  className="mx-auto bg-white text-theme-green hover:bg-theme-light-beige dark:bg-gray-200 dark:hover:bg-gray-100"
-                >
-                  Contact Us
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <CallToAction />
       </main>
       
       <Footer />
