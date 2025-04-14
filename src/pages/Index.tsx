@@ -7,7 +7,7 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import { GoUpButton } from '@/components/go-up-button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Dialog,
