@@ -45,25 +45,34 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
+    
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    
+    --primary: 145 70% 19%;
+    --primary-foreground: 210 40% 98%;
+    
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+    
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
+    
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -81,7 +90,7 @@
   }
 
   body {
-    @apply bg-theme-beige text-theme-navy font-sans;
+    @apply bg-theme-beige text-theme-navy font-sans dark:bg-gray-900 dark:text-white transition-colors duration-300;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -146,6 +155,14 @@
     margin-right: 0.5rem;
   }
 
+  /* Card hover effect */
+  @media (min-width: 768px) {
+    .stagger-card:hover {
+      transform: translateY(-5px) scale(1.03);
+      z-index: 10;
+    }
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
@@ -153,14 +170,17 @@
 
   ::-webkit-scrollbar-track {
     background: theme('colors.theme.light-beige');
+    @apply dark:bg-gray-800;
   }
 
   ::-webkit-scrollbar-thumb {
     background: theme('colors.theme.green');
     border-radius: 4px;
+    @apply dark:bg-theme-green/70;
   }
 
   ::-webkit-scrollbar-thumb:hover {
     background: theme('colors.theme.dark-green');
+    @apply dark:bg-theme-green;
   }
 }
