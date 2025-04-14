@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Button from './Button';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
@@ -45,6 +45,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const { ref, isIntersecting } = useScrollAnimation();
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [expandDirection, setExpandDirection] = useState<'left' | 'right' | 'even'>('right');
+  const cardRef = useRef<HTMLDivElement>(null);
   const [editedData, setEditedData] = useState({
     title,
     subtitle,
@@ -54,6 +56,38 @@ const PricingCard: React.FC<PricingCardProps> = ({
     variant,
     image: image || ''
   });
+
+  useEffect(() => {
+    if (cardRef.current) {
+      const determineExpandDirection = () => {
+        const cardRect = cardRef.current?.getBoundingClientRect();
+        if (!cardRect) return;
+        
+        const windowWidth = window.innerWidth;
+        const cardCenterX = cardRect.left + cardRect.width / 2;
+        const thirdOfScreen = windowWidth / 3;
+        
+        // If card is in the left third of the screen, expand right
+        if (cardCenterX < thirdOfScreen) {
+          setExpandDirection('right');
+        } 
+        // If card is in the right third of the screen, expand left
+        else if (cardCenterX > thirdOfScreen * 2) {
+          setExpandDirection('left');
+        } 
+        // If card is in the middle third, expand evenly
+        else {
+          setExpandDirection('even');
+        }
+      };
+      
+      // Determine direction on mount and window resize
+      determineExpandDirection();
+      window.addEventListener('resize', determineExpandDirection);
+      
+      return () => window.removeEventListener('resize', determineExpandDirection);
+    }
+  }, []);
 
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => setIsHovered(false);
@@ -100,13 +134,18 @@ const PricingCard: React.FC<PricingCardProps> = ({
   return (
     <>
       <div
-        ref={ref}
+        ref={(el) => {
+          // Combine refs
+          ref(el);
+          if (cardRef) cardRef.current = el;
+        }}
         className={cn(
-          "rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-xl stagger-card reveal-on-scroll",
+          "rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-xl stagger-card reveal-on-scroll relative",
           variant === 'featured' ? 'border-2 border-theme-green dark:border-theme-green' : 'border border-theme-dark-beige dark:border-gray-700',
           isIntersecting ? "revealed" : "",
           className,
-          "relative"
+          "group",
+          isHovered ? 'z-50' : 'z-10'
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -135,58 +174,96 @@ const PricingCard: React.FC<PricingCardProps> = ({
           </button>
         )}
 
-        {/* Card Image */}
-        {image && (
-          <div className="w-full h-40 overflow-hidden">
-            <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" />
-          </div>
-        )}
-
-        {/* Card header */}
+        {/* Main Card Content */}
         <div className={cn(
-          "p-4 flex justify-between",
-          variant === 'featured' ? 'bg-theme-green text-white dark:bg-theme-green' : 'bg-theme-dark-beige dark:bg-theme-navy'
+          "transition-all duration-300",
+          isHovered && "relative"
         )}>
-          <div>
-            <h3 className="font-bold text-lg">{title}</h3>
-            <p className="text-sm opacity-80">{subtitle}</p>
-          </div>
-        </div>
-
-        {/* Card body */}
-        <div className={cn(
-          "px-6 py-7 bg-theme-light-beige dark:bg-gray-800 dark:text-gray-200",
-          isHovered ? "transform-gpu transition-all duration-300 ease-in-out" : ""
-        )}>
-          <div className="mb-6">
-            <p className="text-sm text-theme-navy dark:text-gray-400 opacity-70">Starting at</p>
-            <p className="text-3xl font-bold text-theme-navy dark:text-white">{price}</p>
-          </div>
-          
-          <Button 
-            variant={variant === 'featured' ? 'primary' : 'outline'} 
-            fullWidth 
-            className="mb-6"
-          >
-            {buttonText}
-          </Button>
-
-          <ul className={cn(
-            "space-y-2 transition-all duration-300",
-            isHovered ? "max-h-full opacity-100" : "max-h-60 overflow-hidden"
-          )}>
-            {features.map((feature, index) => (
-              <li key={index} className="flex items-start">
-                <Check className="text-theme-green dark:text-green-400 shrink-0 h-5 w-5 mr-2 mt-0.5" />
-                <span className="text-sm">{feature}</span>
-              </li>
-            ))}
-          </ul>
-          
-          {features.length > 4 && !isHovered && (
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-theme-light-beige dark:from-gray-800 to-transparent pointer-events-none" />
+          {/* Card Image */}
+          {image && (
+            <div className="w-full h-40 overflow-hidden">
+              <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-300 hover:scale-110" />
+            </div>
           )}
+
+          {/* Card header */}
+          <div className={cn(
+            "p-4 flex justify-between",
+            variant === 'featured' ? 'bg-theme-green text-white dark:bg-theme-green' : 'bg-theme-dark-beige dark:bg-theme-navy'
+          )}>
+            <div>
+              <h3 className="font-bold text-lg">{title}</h3>
+              <p className="text-sm opacity-80">{subtitle}</p>
+            </div>
+          </div>
+
+          {/* Card body */}
+          <div className={cn(
+            "px-6 py-7 bg-theme-light-beige dark:bg-gray-800 dark:text-gray-200",
+          )}>
+            <div className="mb-6">
+              <p className="text-sm text-theme-navy dark:text-gray-400 opacity-70">Starting at</p>
+              <p className="text-3xl font-bold text-theme-navy dark:text-white">{price}</p>
+            </div>
+            
+            <Button 
+              variant={variant === 'featured' ? 'primary' : 'outline'} 
+              fullWidth 
+              className="mb-6"
+            >
+              {buttonText}
+            </Button>
+
+            {/* Base feature list (only on mobile or when not hovered) */}
+            <ul className={cn(
+              "space-y-2 transition-all duration-300 md:hidden",
+            )}>
+              {features.map((feature, index) => (
+                <li key={index} className="flex items-start">
+                  <Check className="text-theme-green dark:text-green-400 shrink-0 h-5 w-5 mr-2 mt-0.5" />
+                  <span className="text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
+
+        {/* Expanded content that appears on hover */}
+        <div
+          className={cn(
+            "absolute top-0 bottom-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-theme-dark-beige dark:border-gray-700 px-6 py-6 transition-all duration-300 opacity-0 invisible overflow-hidden",
+            "md:flex md:flex-col",
+            isHovered ? "opacity-100 visible z-20" : "opacity-0 invisible",
+            {
+              "left-full w-[200%] rounded-l-none": expandDirection === 'right', 
+              "right-full w-[200%] rounded-r-none": expandDirection === 'left',
+              "-left-[50%] w-[200%]": expandDirection === 'even'
+            }
+          )}
+        >
+          <div className="flex-1 overflow-y-auto p-4">
+            <h3 className="text-xl font-bold text-theme-navy dark:text-white mb-4">{title} Features</h3>
+            <ul className="space-y-3">
+              {features.map((feature, index) => (
+                <li key={index} className="flex items-start">
+                  <Check className="text-theme-green dark:text-green-400 shrink-0 h-5 w-5 mr-3 mt-0.5" />
+                  <span className="text-theme-navy dark:text-white">{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <p className="mb-2 text-theme-navy dark:text-white font-semibold">Price:</p>
+              <p className="text-2xl font-bold text-theme-green dark:text-green-400 mb-6">{price}</p>
+              <Button 
+                variant={variant === 'featured' ? 'primary' : 'outline'} 
+                fullWidth 
+              >
+                {buttonText}
+              </Button>
+            </div>
+          </div>
+        </div>
+
       </div>
       
       {/* Edit Dialog */}
