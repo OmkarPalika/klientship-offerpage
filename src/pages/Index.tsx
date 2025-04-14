@@ -4,20 +4,12 @@ import Footer from '@/components/Footer';
 import { GoUpButton } from '@/components/go-up-button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Helmet } from 'react-helmet';
 import Button from '@/components/Button';
-import { X } from 'lucide-react';
 import HeroBanner from '@/components/pricing/HeroBanner';
 import PricingSection from '@/components/pricing/PricingSection';
 import CallToAction from '@/components/pricing/CallToAction';
+import AddPlanDialog from '@/components/pricing/AddPlanDialog';
 
 interface PricingPlan {
   id: string;
@@ -42,6 +34,7 @@ const defaultImages = [
   'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80'
 ];
 
+// Default pricing plans
 const defaultPlans: PricingPlan[] = [
   {
     id: uuidv4(),
@@ -220,6 +213,7 @@ const Index = () => {
     image: null
   });
   
+  // Load pricing plans from localStorage or use defaults
   useEffect(() => {
     const savedPlans = localStorage.getItem('pricingPlans');
     if (savedPlans) {
@@ -229,12 +223,14 @@ const Index = () => {
     }
   }, []);
   
+  // Save pricing plans to localStorage when they change
   useEffect(() => {
     if (pricingPlans.length > 0) {
       localStorage.setItem('pricingPlans', JSON.stringify(pricingPlans));
     }
   }, [pricingPlans]);
   
+  // Animation for revealing elements on scroll
   useEffect(() => {
     const handleScroll = () => {
       const reveal = document.querySelectorAll('.reveal-on-scroll');
@@ -303,10 +299,18 @@ const Index = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-theme-beige dark:bg-gray-900 dark:text-white transition-colors duration-300">
+      {/* SEO Metadata */}
+      <Helmet>
+        <title>Digital Services | Premium Web Development Solutions</title>
+        <meta name="description" content="Choose from our range of premium digital services including website development, app creation and e-commerce solutions at competitive prices." />
+        <meta name="keywords" content="web development, digital services, app development, website pricing, portfolio website, ecommerce website" />
+      </Helmet>
+      
       <Header />
       
-      <div className="fixed top-6 right-6 z-50 flex items-center">
-        <ThemeToggle />
+      {/* Theme Toggle - Fixed position with improved accessibility */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle className="motion-safe:animate-fade-in" />
       </div>
       
       <GoUpButton />
@@ -326,108 +330,17 @@ const Index = () => {
       
       <Footer />
       
-      <Dialog open={isAddingCard} onOpenChange={setIsAddingCard}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Plan</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
-              </Label>
-              <Input
-                id="title"
-                value={newCardData.title}
-                onChange={(e) => setNewCardData({...newCardData, title: e.target.value})}
-                className="col-span-3"
-                placeholder="Plan Title"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="subtitle" className="text-right">
-                Subtitle
-              </Label>
-              <Input
-                id="subtitle"
-                value={newCardData.subtitle}
-                onChange={(e) => setNewCardData({...newCardData, subtitle: e.target.value})}
-                className="col-span-3"
-                placeholder="For whom"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
-                Price
-              </Label>
-              <Input
-                id="price"
-                value={newCardData.price}
-                onChange={(e) => setNewCardData({...newCardData, price: e.target.value})}
-                className="col-span-3"
-                placeholder="e.g. ₹1,999"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="image"
-                value={newCardData.image || ''}
-                onChange={(e) => setNewCardData({...newCardData, image: e.target.value})}
-                className="col-span-3"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right mt-2">
-                Features
-              </Label>
-              <div className="col-span-3 space-y-2">
-                {newCardData.features.map((feature, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={feature}
-                      onChange={(e) => handleFeatureChange(index, e.target.value)}
-                      className="flex-1"
-                      placeholder="Feature description"
-                    />
-                    <button 
-                      onClick={() => removeFeature(index)}
-                      className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                      type="button"
-                      disabled={newCardData.features.length <= 1}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                <Button 
-                  onClick={addFeature} 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full mt-2"
-                >
-                  Add Feature
-                </Button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" onClick={() => setIsAddingCard(false)} variant="outline">
-              Cancel
-            </Button>
-            <Button 
-              type="button" 
-              onClick={handleAddCard}
-              disabled={!newCardData.title || !newCardData.subtitle || !newCardData.price || newCardData.features.some(f => !f.trim())}
-            >
-              Add Plan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Add New Plan Dialog - Now using the refactored component */}
+      <AddPlanDialog
+        isOpen={isAddingCard}
+        onClose={() => setIsAddingCard(false)}
+        onAdd={handleAddCard}
+        planData={newCardData}
+        setPlanData={setNewCardData}
+        handleFeatureChange={handleFeatureChange}
+        addFeature={addFeature}
+        removeFeature={removeFeature}
+      />
     </div>
   );
 };

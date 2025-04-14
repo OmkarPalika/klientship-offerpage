@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Button from './Button';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 interface PricingCardProps {
   id: string;
@@ -57,7 +56,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
     image: image || ''
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (cardRef.current) {
       const determineExpandDirection = () => {
         const cardRect = cardRef.current?.getBoundingClientRect();
@@ -67,21 +66,17 @@ const PricingCard: React.FC<PricingCardProps> = ({
         const cardCenterX = cardRect.left + cardRect.width / 2;
         const thirdOfScreen = windowWidth / 3;
         
-        // If card is in the left third of the screen, expand right
         if (cardCenterX < thirdOfScreen) {
           setExpandDirection('right');
         } 
-        // If card is in the right third of the screen, expand left
         else if (cardCenterX > thirdOfScreen * 2) {
           setExpandDirection('left');
         } 
-        // If card is in the middle third, expand evenly
         else {
           setExpandDirection('even');
         }
       };
       
-      // Determine direction on mount and window resize
       determineExpandDirection();
       window.addEventListener('resize', determineExpandDirection);
       
@@ -133,13 +128,16 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   // Create a properly typed callback ref function
   const setRefs = React.useCallback((element: HTMLDivElement | null) => {
-    // Handle the animation ref if it's a function
-    if (animationRef && typeof animationRef === 'function') {
-      animationRef(element);
+    // For the animation ref
+    if (typeof animationRef === 'object' && animationRef !== null && 'current' in animationRef) {
+      // If it's a RefObject
+      (animationRef as React.RefObject<HTMLDivElement>).current = element;
     }
     
     // Set the card ref
-    cardRef.current = element;
+    if (cardRef) {
+      cardRef.current = element;
+    }
   }, [animationRef]);
 
   return (
@@ -161,8 +159,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
         {onDelete && (
           <button 
             onClick={handleDelete}
-            className="absolute top-2 right-2 z-10 rounded-full bg-red-500 text-white p-1 opacity-0 transition-opacity hover:bg-red-600"
-            style={{ opacity: isHovered ? 1 : 0 }}
+            className={cn(
+              "absolute top-2 right-2 z-10 rounded-full bg-red-500 text-white p-1 transition-opacity hover:bg-red-600",
+              isHovered ? "opacity-100" : "opacity-0"
+            )}
             aria-label="Delete card"
           >
             <X className="h-4 w-4" />
@@ -173,8 +173,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
         {onEdit && (
           <button 
             onClick={handleEdit}
-            className="absolute top-2 right-10 z-10 rounded-full bg-theme-navy dark:bg-theme-beige dark:text-theme-navy text-white p-1 opacity-0 transition-opacity hover:bg-theme-dark-green"
-            style={{ opacity: isHovered ? 1 : 0 }}
+            className={cn(
+              "absolute top-2 right-10 z-10 rounded-full bg-theme-navy dark:bg-theme-beige dark:text-theme-navy text-white p-1 transition-opacity hover:bg-theme-dark-green",
+              isHovered ? "opacity-100" : "opacity-0"
+            )}
             aria-label="Edit card"
           >
             <Edit className="h-4 w-4" />
@@ -238,9 +240,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
         {/* Expanded content that appears on hover */}
         <div
           className={cn(
-            "absolute top-0 bottom-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-theme-dark-beige dark:border-gray-700 px-6 py-6 transition-all duration-300 opacity-0 invisible overflow-hidden",
+            "absolute top-0 bottom-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-theme-dark-beige dark:border-gray-700 px-6 py-6 transition-all duration-300",
             "md:flex md:flex-col",
-            isHovered ? "opacity-100 visible z-20" : "opacity-0 invisible",
+            isHovered ? "opacity-100 visible z-20" : "opacity-0 invisible pointer-events-none",
             {
               "left-full w-[200%] rounded-l-none": expandDirection === 'right', 
               "right-full w-[200%] rounded-r-none": expandDirection === 'left',

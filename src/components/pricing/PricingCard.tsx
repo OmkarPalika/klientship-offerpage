@@ -96,13 +96,16 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   // Create a properly typed callback ref function
   const setRefs = React.useCallback((element: HTMLDivElement | null) => {
-    // Handle the animation ref if it's a function
-    if (animationRef && typeof animationRef === 'function') {
-      animationRef(element);
+    // For the animation ref
+    if (typeof animationRef === 'object' && animationRef !== null && 'current' in animationRef) {
+      // If it's a RefObject
+      (animationRef as React.RefObject<HTMLDivElement>).current = element;
     }
     
     // Set the card ref
-    cardRef.current = element;
+    if (cardRef) {
+      cardRef.current = element;
+    }
   }, [animationRef]);
 
   return (
@@ -177,9 +180,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
         {/* Expanded content that appears on hover */}
         <div
           className={cn(
-            "absolute top-0 bottom-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-theme-dark-beige dark:border-gray-700 px-6 py-6 transition-all duration-300 opacity-0 invisible overflow-hidden z-20",
+            "absolute top-0 bottom-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-theme-dark-beige dark:border-gray-700 px-6 py-6 transition-all duration-300",
             "md:flex md:flex-col",
-            isHovered && "opacity-100 visible",
+            isHovered ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none",
             {
               "left-full w-[200%] rounded-l-none": expandDirection === 'right', 
               "right-full w-[200%] rounded-r-none": expandDirection === 'left',
